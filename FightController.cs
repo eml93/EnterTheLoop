@@ -23,7 +23,7 @@ namespace EnterTheLoop
                 bool hasPerkBeenTriggered = g.TriggerPerk(PerkTrigger.AtStart);
 
                 if (hasPerkBeenTriggered) {
-                    ResolveAtStartPerk(g, goonQueue);
+                    TurnOnAtStartPerk(g);
                 }
             }
 
@@ -41,42 +41,42 @@ namespace EnterTheLoop
             return new FightResults(f, fightHistory, turnCounter, c, goonQueue);
         }
 
-        private static void ResolveAtStartPerk(Goon g, Queue<Goon> goonQueue)
+        private static void TurnOnAtStartPerk(Goon g)
+        {
+            TurnOnAndOffAtStartPerk(g, 1);
+        }
+
+        private static void TurnOffAtStartPerk(Goon g)
+        {
+            TurnOnAndOffAtStartPerk(g, -1);
+        }
+
+        private static void TurnOnAndOffAtStartPerk(Goon g, int onOrOff)
         {
             int currentGoonIndex = -1;
             switch(g) {
                 case OfficerGoon officerGoon:
                     currentGoonIndex = goonQueue.ToList().IndexOf(g);
                     if (currentGoonIndex > 0) {
-                        goonQueue.ElementAt(currentGoonIndex - 1).Dmg += 1;
+                        goonQueue.ElementAt(currentGoonIndex - 1).Dmg += onOrOff;
                     }
 
                     if (currentGoonIndex < goonQueue.Count - 2) {
-                        goonQueue.ElementAt(currentGoonIndex + 1).Dmg += 1;
+                        goonQueue.ElementAt(currentGoonIndex + 1).Dmg += onOrOff;
                     }
                 break;
 
                 case DefenderGoon defenderGoon:
                     currentGoonIndex = goonQueue.ToList().IndexOf(g);
                     if (currentGoonIndex > 0) {
-                        goonQueue.ElementAt(currentGoonIndex - 1).Hearts += 1;
+                        goonQueue.ElementAt(currentGoonIndex - 1).Hearts += onOrOff;
                     }
 
                     if (currentGoonIndex < goonQueue.Count - 2) {
-                        goonQueue.ElementAt(currentGoonIndex + 1).Hearts += 1;
+                        goonQueue.ElementAt(currentGoonIndex + 1).Hearts += onOrOff;
                     }
                 break;
             }
-        }
-
-        private static void ResetStaticFields(Character c, Fight f)
-        {
-            c.Reset();
-            f.Reset();
-            goonQueue = new Queue<Goon>();
-            fightHistory = new List<TurnHistory>();
-            turnCounter = 0;
-            goonCounter = 0;
         }
 
         private static void TakeCharacterTurn(Character c)
@@ -99,18 +99,28 @@ namespace EnterTheLoop
             bool isGoonDead = currentGoon.TakeDamage(totalAttackInHearts);
 
             if (isGoonDead) {
+                // if the current Goon triggered its Perk at the start of the Fight, turn off that Perk
+                if (currentGoon.WhenDoesPerkTrigger.Equals(PerkTrigger.AtStart)) {
+                    TurnOffAtStartPerk(currentGoon);
+                }
                 goonQueue.Dequeue();
             }
 
             fightHistory.Add(new CharacterHistory(turnCounter, c, currentGoon, attackInHits, usedHeal, isGoonDead));
         }
-       private static void TakeGoonTurn(Character c)
+
+        private static void TakeGoonTurn(Character c)
         {
             if (goonCounter >= goonQueue.Count) {
                 goonCounter = 0;
             }
 
             Goon attackingGoon = goonQueue.ElementAt(goonCounter);
+
+            if (attackingGoon.PerkCondition == null || attackingGoon.PerkCondition(goonQueue.Count)) {
+                attackingGoon.TriggerPerk(PerkTrigger.OnTurn);
+            }
+
             int goonDmg = attackingGoon.Dmg;
 
             int characterDamageTaken = c.TakeDamage(goonDmg);
@@ -118,6 +128,16 @@ namespace EnterTheLoop
             fightHistory.Add(new GoonHistory(turnCounter, attackingGoon, c, goonCounter, goonDmg, c.IsDead, characterDamageTaken));
 
             goonCounter++;
+        }
+
+        private static void ResetStaticFields(Character c, Fight f)
+        {
+            c.Reset();
+            f.Reset();
+            goonQueue = new Queue<Goon>();
+            fightHistory = new List<TurnHistory>();
+            turnCounter = 0;
+            goonCounter = 0;
         }
     
     }

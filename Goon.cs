@@ -17,7 +17,7 @@ namespace EnterTheLoop
         public float Hearts { get => hearts; set => hearts = value; }
         public string PerkDesc { get => perkDesc; set => perkDesc = value; }
         public PerkTrigger WhenDoesPerkTrigger { get => whenDoesPerkTrigger; set => whenDoesPerkTrigger = value; }
-        protected Func<int, bool> PerkCondition { get => perkCondition; set => perkCondition = value; }
+        public Func<int, bool> PerkCondition { get => perkCondition; set => perkCondition = value; }
         public bool HasPerkBeenTriggered { get => hasPerkBeenTriggered; set => hasPerkBeenTriggered = value; }
 
         public Goon(int dmg, float hearts, string perkDesc)
