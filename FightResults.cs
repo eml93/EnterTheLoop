@@ -3,6 +3,7 @@ namespace EnterTheLoop
     public class FightResults
     {
         private Fight fight;
+        private Fight fight2;
         private List<TurnHistory> turnHistory;
         private int totalTurnCount;
         private int finalCharacterHp;
@@ -31,6 +32,10 @@ namespace EnterTheLoop
             this.usedHeal = characterHistories.Select(ch => ch.UsedHeal).Contains(true);
             this.totalDirectHits = characterHistories.Sum(ch => ch.DirectHitsDealt);
             this.totalPartialHits = characterHistories.Sum(ch => ch.PartialHitsDealt);
+        }
+
+        public FightResults(Fight f, Fight f2, List<TurnHistory> turnHistory, int totalTurnCount, Character c, Queue<Goon> goonQueue) {
+            
         }
 
         public override string ToString()
