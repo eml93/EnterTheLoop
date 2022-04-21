@@ -9,15 +9,26 @@ namespace EnterTheLoop
         private static int turnCounter = 0;
         private static int goonCounter = 0;
 
-        public static FightResults IndividualFight(Character c, Fight f) {
-            //setup
-            ResetStaticFields(c, f);
+        public static FightResults StartFight(Character c, Fight fight, String playerSide) {
+            return StartFight(c, new List<Fight> {fight}, playerSide);
+        }
 
-            foreach (Goon g in f.Goons)
+        public static FightResults StartFight(Character c, List<Fight> allFights, String playerSide) {
+            //setup
+            ResetStaticFields(c, allFights);
+
+            List<Goon> goonsInFight = allFights.SelectMany(f => f.Goons).ToList();
+
+            if (playerSide.Equals("Right")) {
+                goonsInFight.Reverse();
+            }
+
+            foreach (Goon g in goonsInFight)
             {
                 goonQueue.Enqueue(g.Copy());
             }
 
+            // trigger all OnStart Goon Perks
             foreach (Goon g in goonQueue)
             {
                 bool hasPerkBeenTriggered = g.TriggerPerk(PerkTrigger.AtStart);
@@ -27,6 +38,7 @@ namespace EnterTheLoop
                 }
             }
 
+            // Begin combat
             while(goonQueue.Count > 0 && !c.IsDead) {
                 turnCounter++;
 
@@ -38,7 +50,7 @@ namespace EnterTheLoop
                 }
             }
 
-            return new FightResults(f, fightHistory, turnCounter, c, goonQueue);
+            return new FightResults(allFights, fightHistory, turnCounter, c, goonQueue, playerSide);
         }
 
         private static void TurnOnAtStartPerk(Goon g)
@@ -130,10 +142,10 @@ namespace EnterTheLoop
             goonCounter++;
         }
 
-        private static void ResetStaticFields(Character c, Fight f)
+        private static void ResetStaticFields(Character c, List<Fight> allFights)
         {
             c.Reset();
-            f.Reset();
+            allFights.ForEach(f => f.Reset());
             goonQueue = new Queue<Goon>();
             fightHistory = new List<TurnHistory>();
             turnCounter = 0;

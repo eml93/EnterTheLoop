@@ -2,8 +2,7 @@ namespace EnterTheLoop
 {
     public class FightResults
     {
-        private Fight fight;
-        private Fight fight2;
+        private List<Fight> allFights;
         private List<TurnHistory> turnHistory;
         private int totalTurnCount;
         private int finalCharacterHp;
@@ -14,16 +13,19 @@ namespace EnterTheLoop
         private Queue<Goon> goonQueue;
         private int totalDirectHits;
         private int totalPartialHits;
+        private String allFightsString;
+        private String playerSide;
 
-        public FightResults(Fight f, List<TurnHistory> turnHistory, int totalTurnCount, Character c, Queue<Goon> goonQueue)
+        public FightResults(List<Fight> allFights, List<TurnHistory> turnHistory, int totalTurnCount, Character c, Queue<Goon> goonQueue, string playerSide)
         {
-            this.fight = f;
+            this.allFights = allFights;
             this.turnHistory = turnHistory;
             this.totalTurnCount = totalTurnCount;
             this.character = c;
             this.goonQueue = goonQueue;
             this.finalCharacterHp = character.Hp;
             this.isCharacterDead = character.IsDead;
+            this.playerSide = playerSide;
 
             List<CharacterHistory> characterHistories = turnHistory.OfType<CharacterHistory>().ToList();
             List<GoonHistory> goonHistories = turnHistory.OfType<GoonHistory>().ToList();
@@ -32,15 +34,17 @@ namespace EnterTheLoop
             this.usedHeal = characterHistories.Select(ch => ch.UsedHeal).Contains(true);
             this.totalDirectHits = characterHistories.Sum(ch => ch.DirectHitsDealt);
             this.totalPartialHits = characterHistories.Sum(ch => ch.PartialHitsDealt);
-        }
 
-        public FightResults(Fight f, Fight f2, List<TurnHistory> turnHistory, int totalTurnCount, Character c, Queue<Goon> goonQueue) {
-            
+            if (allFights.Count > 1) {
+                allFightsString = $"Fights [{(String.Join(",", allFights.Select(f=> f.GetName())))}]";
+            } else {
+                allFightsString = $"Fight {allFights[0].GetName()}";
+            }
         }
 
         public override string ToString()
         {
-            return $"Fight {fight.GetName()} had {totalTurnCount} total turns, with {(isCharacterDead ? "the Goons winning" : "the Character winning")}.\n" +
+            return $"{allFightsString} from the {playerSide} had {totalTurnCount} total turns, with {(isCharacterDead ? "the Goons winning" : "the Character winning")}.\n" +
             $"The Character dealt {totalDirectHits} direct hits and {totalPartialHits} partial hits. The Goons dealt the Character {totalCharacterHpLost} dmg.";
         }
 
@@ -52,5 +56,7 @@ namespace EnterTheLoop
         public bool IsCharacterDead { get => isCharacterDead; set => isCharacterDead = value; }
         public Character Character { get => character; set => character = value; }
         public Queue<Goon> GoonQueue { get => goonQueue; set => goonQueue = value; }
+        public string AllFightsString { get => allFightsString; set => allFightsString = value; }
+        public string PlayerSide { get => playerSide; set => playerSide = value; }
     }
 }

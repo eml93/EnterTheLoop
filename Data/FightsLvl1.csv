@@ -1,0 +1,9 @@
+Lvl,Number,Amount in Deck,Goon 1,Goon 2,Goon 3
+1,1,2,Fisher,,
+1,2,2,Assassin,,
+1,3,2,Handgun,,
+1,4,2,Crier,,
+1,5,2,Scout,Fisher,
+1,6,2,Officer,,
+1,7,2,Defender,,
+1,8,2,Fisher,Crier,

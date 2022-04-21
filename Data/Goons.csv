@@ -1,0 +1,16 @@
+,Name,DMG,Hearts,Perk
+,Handgun,2,1,
+,Brute,2,1,x2 DMG if last goon Alive
+,Scout,1,1,Alert Gained == Dmg 
+,Growler,1,2,Gains +1 DMG on hit
+,Officer,0,2,Adj Goons gain +1 DMG
+,Assassin,1,1,Must be killed last
+,AshMad,1,3,Steals WA = DMG given
+,MeatHook,4,3,If you die lose 1 Art
+,Defender,0,2,Adj Goons gain +1 Hears
+,Crier,0,2,Move BH one space closer on turn
+,Fisher,1,1,
+,Drunk,0,1,Explodes on turn dealing 3 DMG
+,Flagellator,5,3,Attacks every other turn
+,Cell,3,1,On Death other goons gain +1 DMG and Heart
+,Thief,2,4,Steals 1 Gold on attack

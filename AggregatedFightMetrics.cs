@@ -3,7 +3,7 @@ namespace EnterTheLoop
     public class AggregatedFightMetrics
     {
         private List<FightResults> fightResults = new List<FightResults>();
-        private Fight fight;
+        private List<Fight> allFights;
         private float totalFights;
         private double successRate;
         private double avgTurnToComplete;
@@ -12,16 +12,20 @@ namespace EnterTheLoop
         private int mostDmgDealt;
         private int mostTurnsTaken;
         private double healingRate;
+        private String fightName;
 
         public int MostDmgDealt { get => mostDmgDealt; set => mostDmgDealt = value; }
         public int MostTurnsTaken { get => mostTurnsTaken; set => mostTurnsTaken = value; }
         public double AvgTurnToComplete { get => avgTurnToComplete; set => avgTurnToComplete = value; }
         public double AvgDmgDealt { get => avgDmgDealt; set => avgDmgDealt = value; }
-        public Fight Fight { get => fight; set => fight = value; }
+        public List<Fight> AllFights { get => allFights; set => allFights = value; }
+        public string FightName { get => fightName; set => fightName = value; }
 
-        public AggregatedFightMetrics(List<FightResults> fightResults, Fight fight) {
+        public AggregatedFightMetrics(List<FightResults> fightResults, List<Fight> allFights) {
             this.fightResults = fightResults;
-            this.fight = fight;
+            this.allFights = allFights;
+
+            this.fightName = $"{fightResults[0].AllFightsString} ({fightResults[0].PlayerSide})";
 
             ComputeMetrics();
         }
@@ -40,7 +44,7 @@ namespace EnterTheLoop
 
         public override string ToString()
         {
-            return $"After running Fight {fight.GetName()} {totalFights} times, some metrics:\n---------\n"+
+            return $"After running {fightName} {totalFights} times, some metrics:\n---------\n"+
             $"Success Rate is {successRate}%\n" +
             $"Percent of Fights using Heal is {healingRate}%\n" +
             $"Average number of turns to complete is {avgTurnToComplete}\n" +

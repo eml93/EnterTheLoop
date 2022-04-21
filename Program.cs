@@ -13,6 +13,7 @@ class Program {
     private static readonly string GoonNamespace = "Goons.";
     
     public static void Main(String[] args) {
+        DateTime startTime = DateTime.Now;
         readGoonsIntoGoonMap();
         readFightsIntoFightMap();
         createFightDeck();
@@ -21,24 +22,35 @@ class Program {
         bool doubles = args[0].Equals("doubles"); 
         int numOfInterations = Int32.Parse(args.Length > 1 ? args[1] : "50");
         String specificFight = args.Length > 2 ? args[2] : String.Empty; 
-
-        if (!String.IsNullOrEmpty(specificFight)) {
-            SingleFight(fightMap[specificFight], numOfInterations);
-        } else {
-            if (!doubles) {
-                foreach (Fight f in fightMap.Values) {
-                    SingleFight(f, numOfInterations);
-                }
+        
+        if (doubles) {
+            if (!String.IsNullOrEmpty(specificFight)) {
+                String[] fights = specificFight.Split(",");
+                TestFights(new List<Fight>() {fightMap[fights[0]], fightMap[fights[1]]}, numOfInterations);
             } else {
                 foreach (Fight f1 in fightMap.Values) {
                     foreach (Fight f2 in fightMap.Values) {
-                        //MultiFight(f1, f2, numOfIterations)
+                        if (f1.GetName().Equals(f2.GetName()) && f1.CopiesInDeck == 1) {
+                            continue;
+                        }
+                        TestFights(new List<Fight>() {f1, f2}, numOfInterations);
                     }
+                }
+            } 
+        } else {
+            if (!String.IsNullOrEmpty(specificFight)) {
+                TestFights(new List<Fight>() {fightMap[specificFight]}, numOfInterations);
+            } else {
+                foreach (Fight f in fightMap.Values) {
+                    TestFights(new List<Fight>() {f}, numOfInterations);
                 }
             }
         }
 
-        AggregateTheAggregates();            
+        AggregateTheAggregates(); 
+
+        Console.WriteLine();           
+        Console.WriteLine($"Total calculations took {(DateTime.Now - startTime).TotalSeconds} seconds");           
 
         // //debug output
         // foreach(Goon g in goonMap.Values) {
@@ -55,32 +67,23 @@ class Program {
 
     }
 
-    private static void SingleFight(Fight fight, int numOfIterations)
+    private static void TestFights(List<Fight> allFights, int numOfIterations)
     {
-        List<FightResults> allFightResults = new List<FightResults>();
+        List<FightResults> leftFightResults = new List<FightResults>();
+        List<FightResults> rightFightResults = new List<FightResults>();
 
         for (int i = 0; i < numOfIterations; i++) {
-            allFightResults.Add(FightController.IndividualFight(c, fight));
+            leftFightResults.Add(FightController.StartFight(c, allFights, "Left"));
+            rightFightResults.Add(FightController.StartFight(c, allFights, "Right"));
         }
 
-        AggregatedFightMetrics fightMetrics = new AggregatedFightMetrics(allFightResults, fight);
-        allFightMetrics.Add(fightMetrics);
+        AggregatedFightMetrics leftFightMetrics = new AggregatedFightMetrics(leftFightResults, allFights);
+        AggregatedFightMetrics rightFightMetrics = new AggregatedFightMetrics(rightFightResults, allFights);
+        allFightMetrics.Add(leftFightMetrics);
+        allFightMetrics.Add(rightFightMetrics);
 
-        Console.WriteLine(fightMetrics);
-    }
-
-     private static void MultiFight(Fight fight1, Fight fight2, int numOfIterations)
-    {
-        List<FightResults> allFightResults = new List<FightResults>();
-
-        for (int i = 0; i < numOfIterations; i++) {
-            allFightResults.Add(FightController.IndividualFight(c, fight1));
-        }
-
-        AggregatedFightMetrics fightMetrics = new AggregatedFightMetrics(allFightResults, fight1);
-        allFightMetrics.Add(fightMetrics);
-
-        Console.WriteLine(fightMetrics);
+        Console.WriteLine(leftFightMetrics);
+        Console.WriteLine(rightFightMetrics);
     }
     
     private static void AggregateTheAggregates()
@@ -89,10 +92,14 @@ class Program {
         AggregatedFightMetrics mostDmgingAvgFight = allFightMetrics.MaxBy(fm => fm.AvgDmgDealt);
 
         List<AggregatedFightMetrics> acceptableFights = allFightMetrics.Where(fm => fm.AvgDmgDealt <= 5).ToList();
+        List<AggregatedFightMetrics> unacceptableFights = allFightMetrics.Where(fm => fm.AvgDmgDealt > 5).ToList();
 
-        Console.WriteLine($"The longest Fight to complete, on average, was {longestAvgFight.Fight.GetName()}, taking {longestAvgFight.AvgTurnToComplete} turns");
-        Console.WriteLine($"The most damaging Fight complete, on average, was {mostDmgingAvgFight.Fight.GetName()}, taking {mostDmgingAvgFight.AvgDmgDealt} HP");
-        Console.WriteLine($"There are {acceptableFights.Count} acceptable fights [{(String.Join(", ", acceptableFights.Select(fm => fm.Fight.GetName() + " " + fm.AvgDmgDealt)))}]");
+        Console.WriteLine($"The longest Fight to complete, on average, was {longestAvgFight.FightName}, taking {longestAvgFight.AvgTurnToComplete} turns");
+        Console.WriteLine($"The most damaging Fight complete, on average, was {mostDmgingAvgFight.FightName}, taking {mostDmgingAvgFight.AvgDmgDealt} HP");
+        Console.WriteLine($"The overall turn count was {allFightMetrics.Average(fm => (int) fm.AvgTurnToComplete)} turns");
+        Console.WriteLine($"The overall dmg average was {allFightMetrics.Average(fm => fm.AvgDmgDealt)} HP");
+        Console.WriteLine($"There are {unacceptableFights.Count} unacceptable fights [{(String.Join(", ", unacceptableFights.Select(fm => fm.FightName + " " + fm.AvgDmgDealt)))}]");
+        Console.WriteLine($"This makes the percentage of acceptable fights {((double)acceptableFights.Count / (double)allFightMetrics.Count) * 100}%, {acceptableFights.Count} / {allFightMetrics.Count}");
     }
 
     private static void createFightDeck()
@@ -108,7 +115,7 @@ class Program {
 
     private static void readGoonsIntoGoonMap()
     {
-        var path = @"C:\Users\capho\Downloads\Goons.csv";
+        var path = @"C:\Users\capho\Documents\Coding\EnterTheLoop\Data\Goons.csv";
         using(TextFieldParser csvParser = new TextFieldParser(path)) {
             csvParser.SetDelimiters(new string[] {","});
 
@@ -139,7 +146,7 @@ class Program {
     
     private static void readFightsIntoFightMap()
     {
-         var path = @"C:\Users\capho\Downloads\Fights.csv";
+        var path = @"C:\Users\capho\Documents\Coding\EnterTheLoop\Data\FightsLvl1.csv";
         using(TextFieldParser csvParser = new TextFieldParser(path)) {
             csvParser.SetDelimiters(new string[] {","});
 
@@ -167,5 +174,4 @@ class Program {
     {
         fightLvl1Deck = fightLvl1Deck.OrderBy(i => Guid.NewGuid()).ToList();
     }
-
 }
