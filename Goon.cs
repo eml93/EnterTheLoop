@@ -11,12 +11,14 @@ namespace EnterTheLoop
         private bool isDead;
         protected PerkTrigger whenDoesPerkTrigger;
         private Func<int, bool> perkCondition;
+        private bool hasPerkBeenTriggered;
         public string Name { get => name; set => name = value; }
         public int Dmg { get => dmg; set => dmg = value; }
         public float Hearts { get => hearts; set => hearts = value; }
         public string PerkDesc { get => perkDesc; set => perkDesc = value; }
         public PerkTrigger WhenDoesPerkTrigger { get => whenDoesPerkTrigger; set => whenDoesPerkTrigger = value; }
         protected Func<int, bool> PerkCondition { get => perkCondition; set => perkCondition = value; }
+        public bool HasPerkBeenTriggered { get => hasPerkBeenTriggered; set => hasPerkBeenTriggered = value; }
 
         public Goon(int dmg, float hearts, string perkDesc)
         {
@@ -26,6 +28,8 @@ namespace EnterTheLoop
             this.startingHearts = Hearts;
             this.perkDesc = perkDesc;
             this.isDead = false;
+            this.hasPerkBeenTriggered = false;
+
         }
 
         public override string ToString()
@@ -46,8 +50,7 @@ namespace EnterTheLoop
             return isDead;
         }
 
-        // should replace this by making Goon abstract, but thats for another time
-        protected abstract void TriggerPerk(PerkTrigger trigger);
+        public abstract bool TriggerPerk(PerkTrigger trigger);
 
         internal void Reset() {
             hearts = startingHearts;

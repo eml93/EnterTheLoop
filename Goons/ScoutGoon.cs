@@ -14,9 +14,9 @@ namespace EnterTheLoop.Goons
             return new ScoutGoon(startingDmg, startingHearts, perkDesc);
         }
 
-        protected override void TriggerPerk(PerkTrigger trigger)
+        public override bool TriggerPerk(PerkTrigger trigger)
         {
-            // Do nothing
+            return HasPerkBeenTriggered;
         }
     }
 }

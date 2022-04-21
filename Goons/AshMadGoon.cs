@@ -13,9 +13,9 @@ namespace EnterTheLoop.Goons
             return new AshMadGoon(startingDmg, startingHearts, perkDesc);
         }
 
-        protected override void TriggerPerk(PerkTrigger trigger)
+        public override bool TriggerPerk(PerkTrigger trigger)
         {
-            // Do Nothing
+            return HasPerkBeenTriggered;
         }
     }
 }

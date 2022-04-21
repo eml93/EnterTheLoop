@@ -14,11 +14,14 @@ namespace EnterTheLoop.Goons
             return new GrowlerGoon(startingDmg, startingHearts, perkDesc);
         }
 
-        protected override void TriggerPerk(PerkTrigger trigger)
+        public override bool TriggerPerk(PerkTrigger trigger)
         {
             if (trigger.Equals(whenDoesPerkTrigger)) {
                 Dmg += 1;
+                HasPerkBeenTriggered = true;
             }
+
+            return HasPerkBeenTriggered;
         }
     }
 }

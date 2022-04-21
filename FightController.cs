@@ -1,3 +1,5 @@
+using EnterTheLoop.Goons;
+
 namespace EnterTheLoop
 {
     public class FightController
@@ -16,9 +18,17 @@ namespace EnterTheLoop
                 goonQueue.Enqueue(g.Copy());
             }
 
+            foreach (Goon g in goonQueue)
+            {
+                bool hasPerkBeenTriggered = g.TriggerPerk(PerkTrigger.AtStart);
+
+                if (hasPerkBeenTriggered) {
+                    ResolveAtStartPerk(g, goonQueue);
+                }
+            }
+
             while(goonQueue.Count > 0 && !c.IsDead) {
                 turnCounter++;
-                updateOngoingPerks();
 
                 // Character's turn
                 if (turnCounter % 2 == 1) {
@@ -31,16 +41,31 @@ namespace EnterTheLoop
             return new FightResults(f, fightHistory, turnCounter, c, goonQueue);
         }
 
-        private static void updateOngoingPerks()
+        private static void ResolveAtStartPerk(Goon g, Queue<Goon> goonQueue)
         {
-            for (int i = 0; i < goonQueue.Count; i++)
-            {
-                String currentGoonName = goonQueue.ElementAt(i).Name;
-                if (currentGoonName.Equals("Officer")) {
-                    if (i - 1 >= 0) {
-                        goonQueue.ElementAt(i - 1).Dmg += 1;
+            int currentGoonIndex = -1;
+            switch(g) {
+                case OfficerGoon officerGoon:
+                    currentGoonIndex = goonQueue.ToList().IndexOf(g);
+                    if (currentGoonIndex > 0) {
+                        goonQueue.ElementAt(currentGoonIndex - 1).Dmg += 1;
                     }
-                }
+
+                    if (currentGoonIndex < goonQueue.Count - 2) {
+                        goonQueue.ElementAt(currentGoonIndex + 1).Dmg += 1;
+                    }
+                break;
+
+                case DefenderGoon defenderGoon:
+                    currentGoonIndex = goonQueue.ToList().IndexOf(g);
+                    if (currentGoonIndex > 0) {
+                        goonQueue.ElementAt(currentGoonIndex - 1).Hearts += 1;
+                    }
+
+                    if (currentGoonIndex < goonQueue.Count - 2) {
+                        goonQueue.ElementAt(currentGoonIndex + 1).Hearts += 1;
+                    }
+                break;
             }
         }
 

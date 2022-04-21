@@ -13,6 +13,12 @@ namespace EnterTheLoop
         private int mostTurnsTaken;
         private double healingRate;
 
+        public int MostDmgDealt { get => mostDmgDealt; set => mostDmgDealt = value; }
+        public int MostTurnsTaken { get => mostTurnsTaken; set => mostTurnsTaken = value; }
+        public double AvgTurnToComplete { get => avgTurnToComplete; set => avgTurnToComplete = value; }
+        public double AvgDmgDealt { get => avgDmgDealt; set => avgDmgDealt = value; }
+        public Fight Fight { get => fight; set => fight = value; }
+
         public AggregatedFightMetrics(List<FightResults> fightResults, Fight fight) {
             this.fightResults = fightResults;
             this.fight = fight;

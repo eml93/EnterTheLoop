@@ -6,6 +6,7 @@ class Program {
     private static Dictionary<String, Goon> goonMap = new Dictionary<string, Goon>();
     private static Dictionary<String, Fight> fightMap = new Dictionary<string, Fight>();
     private static List<Fight> fightLvl1Deck = new List<Fight>();
+    private static List<AggregatedFightMetrics> allFightMetrics = new List<AggregatedFightMetrics>();
 
     private static Character c = new Character();
     private static readonly string EnterTheLoopNamespace = "EnterTheLoop.";
@@ -17,11 +18,20 @@ class Program {
         createFightDeck();
         // shuffleFightDeck();
 
-        String numOfInterations = args.Length == 0 ? "50" : args[0];
+        int numOfInterations = Int32.Parse(args.Length == 0 ? "50" : args[0]);
+        String specificFight = args.Length < 2 ? String.Empty : args[1]; 
 
-        foreach (Fight f in fightMap.Values) {
-            SingleFight(f, Int32.Parse(numOfInterations));
-        }            
+        if (!String.IsNullOrEmpty(specificFight)) {
+            SingleFight(fightMap[specificFight], numOfInterations);
+        } else {
+            foreach (Fight f in fightMap.Values) {
+                SingleFight(f, numOfInterations);
+            }
+        }
+
+        
+
+        AggregateTheAggregates();            
 
         // //debug output
         // foreach(Goon g in goonMap.Values) {
@@ -38,6 +48,18 @@ class Program {
 
     }
 
+    private static void AggregateTheAggregates()
+    {
+        AggregatedFightMetrics longestAvgFight = allFightMetrics.MaxBy(fm => fm.AvgTurnToComplete);
+        AggregatedFightMetrics mostDmgingAvgFight = allFightMetrics.MaxBy(fm => fm.AvgDmgDealt);
+
+        List<AggregatedFightMetrics> acceptableFights = allFightMetrics.Where(fm => fm.AvgDmgDealt <= 5).ToList();
+
+        Console.WriteLine($"The longest Fight to complete, on average, was {longestAvgFight.Fight.GetName()}, taking {longestAvgFight.AvgTurnToComplete} turns");
+        Console.WriteLine($"The most damaging Fight complete, on average, was {mostDmgingAvgFight.Fight.GetName()}, taking {mostDmgingAvgFight.AvgDmgDealt} HP");
+        Console.WriteLine($"There are {acceptableFights.Count} acceptable fights [{(String.Join(", ", acceptableFights.Select(fm => fm.Fight.GetName() + " " + fm.AvgDmgDealt)))}]");
+    }
+
     private static void SingleFight(Fight fight, int numOfIterations)
     {
         List<FightResults> allFightResults = new List<FightResults>();
@@ -47,6 +69,7 @@ class Program {
         }
 
         AggregatedFightMetrics fightMetrics = new AggregatedFightMetrics(allFightResults, fight);
+        allFightMetrics.Add(fightMetrics);
 
         Console.WriteLine(fightMetrics);
     }
@@ -114,7 +137,7 @@ class Program {
 
                 Fight fight = new Fight(fields[0], fields[1], fields[2], goonsInFight);
 
-                fightMap.Add($"{fight.Lvl} -- {fight.Number}", fight);
+                fightMap.Add($"{fight.Lvl}-{fight.Number}", fight);
             }
         }
     }
