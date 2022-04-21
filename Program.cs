@@ -8,6 +8,8 @@ class Program {
     private static List<Fight> fightLvl1Deck = new List<Fight>();
 
     private static Character c = new Character();
+    private static readonly string EnterTheLoopNamespace = "EnterTheLoop.";
+    private static readonly string GoonNamespace = "Goons.";
     
     public static void Main(String[] args) {
         readGoonsIntoGoonMap();
@@ -72,7 +74,18 @@ class Program {
             while(!csvParser.EndOfData) {
                 string[] fields = csvParser.ReadFields();
 
-                Goon goon = new Goon(fields[1], fields[2], fields[3], fields[4]);
+                string name = fields[1];
+                int dmg = Int32.Parse(fields[2]);
+                float hearts = float.Parse(fields[3]);
+                string perkDesc = fields[4];
+
+                Type t = Type.GetType(EnterTheLoopNamespace + GoonNamespace + name + "Goon");
+                if (t == null) {
+                    throw new Exception($"Goon {name}Goon not found!");
+                }
+                Goon goon = (Goon) Activator.CreateInstance(t, dmg, hearts, perkDesc);
+
+                // Goon goon = new Goon(fields[1], fields[2], fields[3], fields[4]);
 
                 goonMap.Add(goon.Name, goon);
             }

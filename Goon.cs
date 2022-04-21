@@ -1,36 +1,31 @@
 namespace EnterTheLoop
 {
-    public class Goon
+    public abstract class Goon
     {
         private String name;
         private int dmg;
-        private int startingDmg;
+        protected int startingDmg;
         private float hearts; 
-        private float startingHearts;
-        private String perkDesc; 
+        protected float startingHearts;
+        protected String perkDesc; 
         private bool isDead;
+        protected PerkTrigger whenDoesPerkTrigger;
+        private Func<int, bool> perkCondition;
         public string Name { get => name; set => name = value; }
         public int Dmg { get => dmg; set => dmg = value; }
         public float Hearts { get => hearts; set => hearts = value; }
         public string PerkDesc { get => perkDesc; set => perkDesc = value; }
+        public PerkTrigger WhenDoesPerkTrigger { get => whenDoesPerkTrigger; set => whenDoesPerkTrigger = value; }
+        protected Func<int, bool> PerkCondition { get => perkCondition; set => perkCondition = value; }
 
-        public Goon(string name, string dmg, string hearts, string perkDesc)
+        public Goon(int dmg, float hearts, string perkDesc)
         {
-            this.Name = name;
-            this.Dmg = Int32.Parse(dmg);
-            this.startingDmg = Dmg;
-            this.Hearts = float.Parse(hearts);
-            this.startingHearts = Hearts;
-            this.PerkDesc = perkDesc;
-            this.isDead = false;
-        }
-
-        public Goon(string name, int dmg, float hearts, string perkDesc)
-        {
-            this.name = name;
             this.dmg = dmg;
+            this.startingDmg = Dmg;
             this.hearts = hearts;
+            this.startingHearts = Hearts;
             this.perkDesc = perkDesc;
+            this.isDead = false;
         }
 
         public override string ToString()
@@ -46,23 +41,13 @@ namespace EnterTheLoop
                 isDead = true;
             }
 
-            TriggerPerk();
+            TriggerPerk(PerkTrigger.OnDamage);
 
             return isDead;
         }
 
         // should replace this by making Goon abstract, but thats for another time
-        private void TriggerPerk()
-        {
-            switch(name) {
-                case "Growler":
-                    dmg+=1;
-                    break;
-                case "Bruiser":
-                    dmg*=2;
-                    break;
-            }
-        }
+        protected abstract void TriggerPerk(PerkTrigger trigger);
 
         internal void Reset() {
             hearts = startingHearts;
@@ -70,9 +55,7 @@ namespace EnterTheLoop
             isDead = false;
         }
 
-        internal Goon Copy() {
-            return new Goon(name, dmg, hearts, perkDesc);
-        }
+        public abstract Goon Copy();
     }
 
     public enum PerkTrigger {
