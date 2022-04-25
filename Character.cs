@@ -7,11 +7,13 @@ namespace EnterTheLoop
         private Gun gun;
         private int hitThreshold;
         private bool isDead;
+        private int startingDmg;
 
-        public Character() {
+        public Character(int dmg) {
             hp = 15;
             hasHealing = true;
-            gun = new Gun("Rusty Shotgun", 1, false);
+            startingDmg = dmg;
+            gun = new Gun("Rusty Shotgun", dmg, false);
             hitThreshold = 5;
             IsDead = false;
         }
@@ -19,7 +21,7 @@ namespace EnterTheLoop
         public void Reset() {
             hp = 15;
             hasHealing = true;
-            gun = new Gun("Rusty Shotgun", 1, false);
+            gun = new Gun("Rusty Shotgun", startingDmg, false);
             hitThreshold = 5;
             IsDead = false;
         }

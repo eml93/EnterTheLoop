@@ -10,6 +10,10 @@ namespace EnterTheLoop
         private double avgDmgDealt;
 
         private int mostDmgDealt;
+        private int leastDmgDealt;
+
+        public int mostUnbalancedFight { get; private set; }
+
         private int mostTurnsTaken;
         private double healingRate;
         private String fightName;
@@ -20,6 +24,7 @@ namespace EnterTheLoop
         public double AvgDmgDealt { get => avgDmgDealt; set => avgDmgDealt = value; }
         public List<Fight> AllFights { get => allFights; set => allFights = value; }
         public string FightName { get => fightName; set => fightName = value; }
+        public int LeastDmgDealt { get => leastDmgDealt; set => leastDmgDealt = value; }
 
         public AggregatedFightMetrics(List<FightResults> fightResults, List<Fight> allFights) {
             this.fightResults = fightResults;
@@ -40,6 +45,8 @@ namespace EnterTheLoop
             
             mostTurnsTaken = fightResults.MaxBy(fr => fr.TotalTurnCount).TotalTurnCount;
             mostDmgDealt = fightResults.MaxBy(fr => fr.TotalCharacterHpLost).TotalCharacterHpLost;
+            leastDmgDealt = fightResults.MinBy(fr => fr.TotalCharacterHpLost).TotalCharacterHpLost;
+            mostUnbalancedFight = fightResults.MaxBy(fr => fr.TotalCharacterHpLost).TotalCharacterHpLost - fightResults.MinBy(fr => fr.TotalCharacterHpLost).TotalCharacterHpLost;
         }
 
         public override string ToString()

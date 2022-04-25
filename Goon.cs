@@ -64,6 +64,7 @@ namespace EnterTheLoop
     public enum PerkTrigger {
         OnDamage,
         AtStart,
-        OnTurn
+        OnTurn, 
+        OnDeath
     }
 }

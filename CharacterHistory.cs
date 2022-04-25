@@ -8,6 +8,7 @@ namespace EnterTheLoop
         private List<Goon> goonsDamaged = new List<Goon>();
         private bool usedHeal;
         private bool killedGoon;
+        private bool drunkExploded;
 
         public CharacterHistory(int turnCounter, Character c, Goon currentGoon, int[] attackInHits, bool usedHeal, bool killedGoon)
         {
@@ -18,6 +19,7 @@ namespace EnterTheLoop
             this.partialHitsDealt = attackInHits[1];
             this.usedHeal = usedHeal;
             this.killedGoon = killedGoon;
+            this.drunkExploded = false;
         }
 
         public Character C { get => c; set => c = value; }
@@ -26,5 +28,6 @@ namespace EnterTheLoop
         public List<Goon> GoonsDamaged { get => goonsDamaged; set => goonsDamaged = value; }
         public bool UsedHeal { get => usedHeal; set => usedHeal = value; }
         public bool KilledGoon { get => killedGoon; set => killedGoon = value; }
+        public bool DrunkExploded { get => drunkExploded; set => drunkExploded = value; }
     }
 }

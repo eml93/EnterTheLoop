@@ -7,16 +7,21 @@ class Program {
     private static Dictionary<String, Fight> fightMap = new Dictionary<string, Fight>();
     private static List<Fight> fightLvl1Deck = new List<Fight>();
     private static List<AggregatedFightMetrics> allFightMetrics = new List<AggregatedFightMetrics>();
+    private static Dictionary<int, List<AggregatedFightMetrics>> fightMetricsByDmg = new Dictionary<int, List<AggregatedFightMetrics>>(); 
 
-    private static Character c = new Character();
     private static readonly string EnterTheLoopNamespace = "EnterTheLoop.";
     private static readonly string GoonNamespace = "Goons.";
+    private static readonly string FightLvl1Path = @"C:\Users\capho\Documents\Coding\EnterTheLoop\Data\FightsLvl1.csv";
+    private static readonly string FightLvl2Path = @"C:\Users\capho\Documents\Coding\EnterTheLoop\Data\FightsLvl2.csv";
+    private static readonly string FightLvl3Path = @"C:\Users\capho\Documents\Coding\EnterTheLoop\Data\FightsLvl3.csv";
     
     public static void Main(String[] args) {
         DateTime startTime = DateTime.Now;
         readGoonsIntoGoonMap();
-        readFightsIntoFightMap();
-        createFightDeck();
+        readFightsIntoFightMap(FightLvl1Path);
+        readFightsIntoFightMap(FightLvl2Path);
+        readFightsIntoFightMap(FightLvl3Path);
+        // createFightDeck();
         // shuffleFightDeck();
 
         bool doubles = args[0].Equals("doubles"); 
@@ -69,27 +74,31 @@ class Program {
 
     private static void TestFights(List<Fight> allFights, int numOfIterations)
     {
-        List<FightResults> leftFightResults = new List<FightResults>();
-        List<FightResults> rightFightResults = new List<FightResults>();
+        List<FightResults> leftFightResults;
+        List<FightResults> rightFightResults;
 
-        for (int i = 0; i < numOfIterations; i++) {
-            leftFightResults.Add(FightController.StartFight(c, allFights, "Left"));
-            rightFightResults.Add(FightController.StartFight(c, allFights, "Right"));
+        for (int dmg = 1; dmg < 6; dmg++) {
+            Character c = new Character(dmg);
+            leftFightResults = new List<FightResults>();
+            rightFightResults = new List<FightResults>();
+
+            for (int i = 0; i < numOfIterations; i++) {
+                leftFightResults.Add(FightController.StartFight(c, allFights, "Left"));
+                rightFightResults.Add(FightController.StartFight(c, allFights, "Right"));
+            }
+
+            AggregatedFightMetrics leftFightMetrics = new AggregatedFightMetrics(leftFightResults, allFights);
+            AggregatedFightMetrics rightFightMetrics = new AggregatedFightMetrics(rightFightResults, allFights);
+            
+            fightMetricsByDmg.Add(dmg, new List<AggregatedFightMetrics>() {leftFightMetrics, rightFightMetrics});
         }
-
-        AggregatedFightMetrics leftFightMetrics = new AggregatedFightMetrics(leftFightResults, allFights);
-        AggregatedFightMetrics rightFightMetrics = new AggregatedFightMetrics(rightFightResults, allFights);
-        allFightMetrics.Add(leftFightMetrics);
-        allFightMetrics.Add(rightFightMetrics);
-
-        Console.WriteLine(leftFightMetrics);
-        Console.WriteLine(rightFightMetrics);
     }
     
     private static void AggregateTheAggregates()
     {
         AggregatedFightMetrics longestAvgFight = allFightMetrics.MaxBy(fm => fm.AvgTurnToComplete);
         AggregatedFightMetrics mostDmgingAvgFight = allFightMetrics.MaxBy(fm => fm.AvgDmgDealt);
+        AggregatedFightMetrics mostUnbalancedFight = allFightMetrics.MaxBy(fm => fm.mostUnbalancedFight);
 
         List<AggregatedFightMetrics> acceptableFights = allFightMetrics.Where(fm => fm.AvgDmgDealt <= 5).ToList();
         List<AggregatedFightMetrics> unacceptableFights = allFightMetrics.Where(fm => fm.AvgDmgDealt > 5).ToList();
@@ -98,6 +107,8 @@ class Program {
         Console.WriteLine($"The most damaging Fight complete, on average, was {mostDmgingAvgFight.FightName}, taking {mostDmgingAvgFight.AvgDmgDealt} HP");
         Console.WriteLine($"The overall turn count was {allFightMetrics.Average(fm => (int) fm.AvgTurnToComplete)} turns");
         Console.WriteLine($"The overall dmg average was {allFightMetrics.Average(fm => fm.AvgDmgDealt)} HP");
+        Console.WriteLine($"The most unbalanced Fight was {mostUnbalancedFight.FightName}, with the highest dmg dealt {mostUnbalancedFight.MostDmgDealt} and the lowest {mostUnbalancedFight.LeastDmgDealt}");
+        Console.WriteLine($"-----------------------");
         Console.WriteLine($"There are {unacceptableFights.Count} unacceptable fights [{(String.Join(", ", unacceptableFights.Select(fm => fm.FightName + " " + fm.AvgDmgDealt)))}]");
         Console.WriteLine($"This makes the percentage of acceptable fights {((double)acceptableFights.Count / (double)allFightMetrics.Count) * 100}%, {acceptableFights.Count} / {allFightMetrics.Count}");
     }
@@ -144,10 +155,9 @@ class Program {
     }
 
     
-    private static void readFightsIntoFightMap()
+    private static void readFightsIntoFightMap(string fightPath)
     {
-        var path = @"C:\Users\capho\Documents\Coding\EnterTheLoop\Data\FightsLvl1.csv";
-        using(TextFieldParser csvParser = new TextFieldParser(path)) {
+        using(TextFieldParser csvParser = new TextFieldParser(fightPath)) {
             csvParser.SetDelimiters(new string[] {","});
 
             // skips first row

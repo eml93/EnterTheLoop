@@ -30,7 +30,7 @@ namespace EnterTheLoop
             List<CharacterHistory> characterHistories = turnHistory.OfType<CharacterHistory>().ToList();
             List<GoonHistory> goonHistories = turnHistory.OfType<GoonHistory>().ToList();
 
-            this.totalCharacterHpLost = goonHistories.Sum(gh => gh.CharacterDamageTaken);
+            this.totalCharacterHpLost = goonHistories.Sum(gh => gh.CharacterDamageTaken) + (characterHistories.Where(ch => ch.DrunkExploded).Count() * 3);
             this.usedHeal = characterHistories.Select(ch => ch.UsedHeal).Contains(true);
             this.totalDirectHits = characterHistories.Sum(ch => ch.DirectHitsDealt);
             this.totalPartialHits = characterHistories.Sum(ch => ch.PartialHitsDealt);

@@ -91,6 +91,15 @@ namespace EnterTheLoop
             }
         }
 
+        private static void TriggerOnDeathPerk(Goon currentGoon, Character c)
+        {
+            switch(currentGoon) {
+                case DrunkGoon drunkGoon:
+                    c.TakeDamage(3);
+                    break;
+            }
+        }
+
         private static void TakeCharacterTurn(Character c)
         {
             bool usedHeal = false;
@@ -112,13 +121,21 @@ namespace EnterTheLoop
 
             if (isGoonDead) {
                 // if the current Goon triggered its Perk at the start of the Fight, turn off that Perk
-                if (currentGoon.WhenDoesPerkTrigger.Equals(PerkTrigger.AtStart)) {
-                    TurnOffAtStartPerk(currentGoon);
+                switch(currentGoon.WhenDoesPerkTrigger) {
+                    case PerkTrigger.AtStart:
+                        TurnOffAtStartPerk(currentGoon);
+                        break;
+                    case PerkTrigger.OnDeath:
+                        HandleGoonPerk(currentGoon, c, PerkTrigger.OnDeath);
+                        break;
                 }
+
                 goonQueue.Dequeue();
             }
 
-            fightHistory.Add(new CharacterHistory(turnCounter, c, currentGoon, attackInHits, usedHeal, isGoonDead));
+            CharacterHistory ch = new CharacterHistory(turnCounter, c, currentGoon, attackInHits, usedHeal, isGoonDead);
+            ch.DrunkExploded = isGoonDead && currentGoon is DrunkGoon;
+            fightHistory.Add(ch);
         }
 
         private static void TakeGoonTurn(Character c)
@@ -129,17 +146,50 @@ namespace EnterTheLoop
 
             Goon attackingGoon = goonQueue.ElementAt(goonCounter);
 
+            bool skipTurn = false;
             if (attackingGoon.PerkCondition == null || attackingGoon.PerkCondition(goonQueue.Count)) {
-                attackingGoon.TriggerPerk(PerkTrigger.OnTurn);
+                skipTurn = HandleGoonPerk(attackingGoon, c, PerkTrigger.OnTurn, goonCounter);
+                // TriggerPerk returns TriggerResponse, which can be internal, meaning effecting just the GOon, or external, meanign it effects the whole fight
             }
 
-            int goonDmg = attackingGoon.Dmg;
+            // need to Skip these steps if the HandleGoonPerk returns true
+            int goonDmg = 0;
+            int characterDamageTaken = 0;
 
-            int characterDamageTaken = c.TakeDamage(goonDmg);
+            if (!skipTurn) {
+                goonDmg = attackingGoon.Dmg;
+                characterDamageTaken = c.TakeDamage(goonDmg);
+            } 
 
             fightHistory.Add(new GoonHistory(turnCounter, attackingGoon, c, goonCounter, goonDmg, c.IsDead, characterDamageTaken));
 
             goonCounter++;
+        }
+        
+        private static bool HandleGoonPerk(Goon currentGoon, Character c, PerkTrigger perkTrigger)
+        {
+            return HandleGoonPerk(currentGoon, c, perkTrigger, -1);
+        }
+
+        private static bool HandleGoonPerk(Goon attackingGoon, Character c, PerkTrigger perkTrigger, int goonCounter)
+        {
+            bool isPerkTriggered = attackingGoon.TriggerPerk(perkTrigger);
+
+            if (isPerkTriggered) {
+                switch (attackingGoon) {
+                    case DrunkGoon drunkGoon:
+                        c.TakeDamage(3);
+                        break;
+                     case FlagellatorGoon flagellatorGoon:
+                        return true;
+                    case CellGoon cellGoon:
+                        goonQueue.ToList().ForEach(g => {g.Dmg+=1; g.Hearts+=1;});
+                        break;
+                }
+            }
+
+            return false;
+
         }
 
         private static void ResetStaticFields(Character c, List<Fight> allFights)
