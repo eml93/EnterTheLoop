@@ -90,7 +90,8 @@ class Program {
             AggregatedFightMetrics leftFightMetrics = new AggregatedFightMetrics(leftFightResults, allFights);
             AggregatedFightMetrics rightFightMetrics = new AggregatedFightMetrics(rightFightResults, allFights);
             
-            fightMetricsByDmg.Add(dmg, new List<AggregatedFightMetrics>() {leftFightMetrics, rightFightMetrics});
+            allFightMetrics.Add(leftFightMetrics);
+            allFightMetrics.Add(rightFightMetrics);
         }
     }
     
