@@ -2,6 +2,7 @@ namespace EnterTheLoop
 {
     public class GoonHistory : TurnHistory
     {
+        #pragma warning disable 8618
         private Goon attackingGoon;
         private Character characterAttacked;
         private int queueIndex;

@@ -2,6 +2,7 @@ namespace EnterTheLoop
 {
     public abstract class Goon
     {
+        #pragma warning disable 8618
         private String name;
         private int dmg;
         protected int startingDmg;

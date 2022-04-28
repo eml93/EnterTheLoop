@@ -2,6 +2,7 @@ namespace EnterTheLoop
 {
     public class AggregatedFightMetrics
     {
+        #pragma warning disable 8602, 8600
         private List<FightResults> fightResults = new List<FightResults>();
         private List<Fight> allFights;
         private float totalFights;
